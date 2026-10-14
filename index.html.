@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chải Lông Mèo - Siêu Cấp Phiên Bản</title>
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #ffb142;
+            --bg: #f7f9fc;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 25px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            max-width: 440px;
+            width: 100%;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Hiệu ứng rung màn hình */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(-1deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            60% { transform: translate(-1px, 2px) rotate(0deg); }
+            80% { transform: translate(3px, 1px) rotate(-1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .shake-effect {
+            animation: shake 0.4s ease;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            background: #fff5f5;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Thanh Cảnh Báo (Suspicion Meter) */
+        .suspicion-container {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .suspicion-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .suspicion-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .suspicion-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: #e74c3c;
+            transition: width 0.1s ease;
+        }
+
+        /* Khu vực mèo */
+        .cat-stage {
+            font-size: 90px;
+            margin: 10px 0;
+            position: relative;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-text {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 25px;
+        }
+        .status-safe { color: #2ecc71; }
+        .status-warning { color: #e67e22; }
+        .status-danger { color: #e74c3c; }
+
+        /* Nút thao tác */
+        .btn-main {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 177, 66, 0.4);
+            transition: all 0.1s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .btn-main:active { transform: scale(0.96); }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .btn-item {
+            flex: 1;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn-catnip { background-color: #27ae60; }
+        .btn-golden { background-color: #f1c40f; color: #333; }
+        .btn-item:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-shop {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-restart {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            display: none;
+        }
+
+        /* Hiệu ứng lông bay */
+        .floating-fur {
+            position: absolute;
+            font-size: 18px;
+            pointer-events: none;
+            animation: flyUp 0.6s ease-out forwards;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-70px) scale(1.5) rotate(45deg); opacity: 0; }
+        }
+
+        /* Modal Shop */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 350px;
+            width: 90%;
+            text-align: left;
+        }
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .shop-item button {
+            padding: 5px 12px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .shop-item button:disabled { background: #ccc; }
+        .close-shop {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="gameBox">
+        <h1>🐱 Chải Lông Mèo Pro 🐱</h1>
+        
+        <div class="stats-panel">
+            <div>Lông: <strong id="score">0</strong></div>
+            <div>Kỷ lục: <strong id="highScore">0</strong></div>
+            <div>Kho: <strong id="totalFur">0</strong> 🧶</div>
+        </div>
+
+        <!-- Thanh Cảnh Báo Nghi Ngờ -->
+        <div class="suspicion-container">
+            <div class="suspicion-label">
+                <span>Thanh Nghi Ngờ của Mèo</span>
+                <span id="suspicionPercent">0%</span>
+            </div>
+            <div class="suspicion-bar-bg">
+                <div class="suspicion-bar-fill" id="suspicionBar"></div>
+            </div>
+        </div>
+
+        <div class="cat-stage" id="catEmoji">🐈</div>
+        <div class="status-text status-safe" id="statusText">Mèo đang quay lưng. Hãy chải ngay!</div>
+
+        <!-- Vật phẩm hỗ trợ nhanh -->
+        <div class="btn-row">
+            <button class="btn-item btn-catnip" id="btnCatnip" onclick="useCatnip()">🌿 Cỏ Mèo (<span id="catnipCount">1</span>)</button>
+            <button class="btn-item btn-golden" id="btnGolden" onclick="useGoldenBrush()">✨ Lược Vàng (<span id="goldenCount">1</span>)</button>
+        </div>
+
+        <button class="btn-main" id="brushBtn" onmousedown="brushAction()" ontouchstart="brushAction()">🪮 CHẢI LÔNG</button>
+        <button class="btn-shop" onclick="openShop()">🛍️ Cửa Hàng & Đổi Quà</button>
+        <button class="btn-restart" id="restartBtn" onclick="restartGame()">Chơi Lại</button>
+    </div>
+
+    <!-- Modal Cửa Hàng -->
+    <div class="modal" id="shopModal">
+        <div class="modal-content">
+            <h3>🛍️ Cửa Hàng Mèo Méo Meo</h3>
+            <p style="font-size: 13px; color: #666;">Dùng lông thu thập được để mua vật phẩm:</p>
+            
+            <div class="shop-item">
+                <span>🌿 Cỏ Mèo (Gói 1 cái) - <em>Làm mèo đứng yên 4s</em></span>
+                <button onclick="buyItem('catnip', 15)">15 🧶</button>
+            </div>
+            <div class="shop-item">
+                <span>✨ Lược Vàng (Gói 1 cái) - <em>X2 lông trong 5s</em></span>
+                <button onclick="buyItem('golden', 25)">25 🧶</button>
+            </div>
+            <div class="shop-item">
+                <span>🧢 Mũ Lưỡi Trai Cho Mèo</span>
+                <button id="buyHat" onclick="buyCosmetic('hat', 50)">50 🧶</button>
+            </div>
+
+            <button class="close-shop" onclick="closeShop()">Đóng Cửa Hàng</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu Game & Lưu trữ LocalStorage
+        let score = 0;
+        let highScore = localStorage.getItem('cat_highScore') || 0;
+        let totalFur = parseInt(localStorage.getItem('cat_totalFur')) || 0;
+        
+        let catState = 'back'; // 'back' (quay lưng), 'warning' (liếc mắt cảnh báo), 'face' (quay mặt)
+        let suspicion = 0; // 0 - 100%
+        let isGameOver = false;
+        let gameInterval;
+
+        // Vật phẩm sở hữu
+        let catnipCount = parseInt(localStorage.getItem('cat_catnip')) || 1;
+        let goldenCount = parseInt(localStorage.getItem('cat_golden')) || 1;
+        let hasHat = localStorage.getItem('cat_hasHat') === 'true';
+
+        // Trạng thái hiệu ứng đặc biệt
+        let isCatnipActive = false;
+        let isGoldenActive = false;
+        let goldenTimer = null;
+        let catnipTimer = null;
+
+        const catEmoji = document.getElementById('catEmoji');
+        const statusText = document.getElementById('statusText');
+        const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('highScore');
+        const totalFurDisplay = document.getElementById('totalFur');
+        const suspicionBar = document.getElementById('suspicionBar');
+        const suspicionPercent = document.getElementById('suspicionPercent');
+        const brushBtn = document.getElementById('brushBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const gameBox = document.getElementById('gameBox');
+
+        highScoreDisplay.innerText = highScore;
+        totalFurDisplay.innerText = totalFur;
+        updateItemUI();
+
+        // Audio Web API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playPurrSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        }
+
+        function playGrowlSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(90, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(45, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // Vòng lặp hành vi mèo (Chế độ vô tận & tăng độ khó dần)
+        function startCatBehavior() {
+            gameInterval = setInterval(() => {
+                if (isGameOver || isCatnipActive) return;
+
+                let rand = Math.random();
+                if (catState === 'back') {
+                    if (rand < 0.45) {
+                        // Chuyển sang giai đoạn cảnh báo (liếc mắt)
+                        catState = 'warning';
+                        let hatText = hasHat ? '🧢 ' : '';
+                        catEmoji.innerText = hatText + '👀';
+                        statusText.innerText = '⚠️ Mèo chuẩn bị quay lại! Dừng tay!';
+                        statusText.className = 'status-text status-warning';
+                    }
+                } else if (catState === 'warning') {
+                    // Từ cảnh báo chuyển thẳng sang quay mặt
+                    catState = 'face';
+                    let hatText = hasHat ? '🧢 ' : '';
+                    catEmoji.innerText = hatText + '😾';
+                    statusText.innerText = '🚨 Mèo đang nhìn! Đang chải là thua!';
+                    statusText.className = 'status-text status-danger';
+                } else {
+                    // Quay lại tư thế an toàn
+                    catState = 'back';
+                    let hatText = hasHat ? '🧢 ' : '';
+                    catEmoji.innerText = hatText + '🐈';
+                    statusText.innerText = 'Mèo đang quay lưng. Hãy chải ngay!';
+                    statusText.className = 'status-text status-safe';
+                }
+            }, Math.max(800, 2200 - (score * 30))); // Càng được nhiều điểm mèo đổi trạng thái càng nhanh (Vô tận)
+        }
+
+        // Hành động chải lông
+        function brushAction(e) {
+            if (isGameOver) return;
+
+            // Nếu đang bật Cỏ Mèo, an toàn tuyệt đối
+            if (isCatnipActive) {
+                addScoreAndFur();
+                createFloatingFur();
+                return;
+            }
+
+            if (catState === 'face') {
+                // Nhìn thẳng -> Tăng mạnh thanh nghi ngờ hoặc thua ngay
+                suspicion += 50;
+                updateSuspicionBar();
+                if (suspicion >= 100) {
+                    triggerGameOver();
+                } else {
+                    statusText.innerText = '⚠️ Mèo đã phát hiện bạn chải lén! Sắp cào rồi!';
+                }
+            } else if (catState === 'warning') {
+                // Giai đoạn cảnh báo mà vẫn chải -> tăng thanh nghi ngờ 30%
+                suspicion += 30;
+                updateSuspicionBar();
+                if (suspicion >= 100) {
+                    triggerGameOver();
+                }
+            } else {
+                // An toàn (quay lưng) -> Tăng điểm và giảm dần nghi ngờ từ từ
+                addScoreAndFur();
+                createFloatingFur();
+                if (suspicion > 0) {
+                    suspicion = Math.max(0, suspicion - 10);
+                    updateSuspicionBar();
+                }
+            }
+        }
+
+        function addScoreAndFur() {
+            let addCount = isGoldenActive ? 2 : 1;
+            score += addCount;
+            totalFur += addCount;
+            scoreDisplay.innerText = score;
+            totalFurDisplay.innerText = totalFur;
+
+            if (score > highScore) {
+                highScore = score;
+                highScoreDisplay.innerText = highScore;
+                localStorage.setItem('cat_highScore', highScore);
+            }
+            localStorage.setItem('cat_totalFur', totalFur);
+            playPurrSound();
+        }
+
+        function updateSuspicionBar() {
+            suspicionBar.style.width = suspicion + '%';
+            suspicionPercent.innerText = suspicion + '%';
+        }
+
+        // Hiệu ứng lông mèo bay khi chải
+        function createFloatingFur() {
+            let fur = document.createElement('div');
+            fur.className = 'floating-fur';
+            fur.innerText = '🧶';
+            let rect = brushBtn.getBoundingClientRect();
+            fur.style.left = (rect.left + rect.width / 2 + (Math.random() * 40 - 20)) + 'px';
+            fur.style.top = rect.top + 'px';
+            document.body.appendChild(fur);
+            setTimeout(() => fur.remove(), 600);
+        }
+
+        // Sử dụng Cỏ Mèo (Catnip)
+        function useCatnip() {
+            if (catnipCount <= 0 || isGameOver || isCatnipActive) return;
+            catnipCount--;
+            localStorage.setItem('cat_catnip', catnipCount);
+            updateItemUI();
+
+            isCatnipActive = true;
+            let hatText = hasHat ? '🧢 ' : '';
+            catEmoji.innerText = hatText + '😻';
+            statusText.innerText = '🌿 Mèo đang phê cỏ mèo và đứng yên tận hưởng!';
+            statusText.className = 'status-text status-safe';
+
+            clearTimeout(catnipTimer);
+            catnipTimer = setTimeout(() => {
+                isCatnipActive = false;
+                catState = 'back';
+                catEmoji.innerText = hatText + '🐈';
+                statusText.innerText = 'Mèo đang quay lưng. Hãy chải ngay!';
+            }, 4000);
+        }
+
+        // Sử dụng Lược Vàng (Golden Brush)
+        function useGoldenBrush() {
+            if (goldenCount <= 0 || isGameOver || isGoldenActive) return;
+            goldenCount--;
+            localStorage.setItem('cat_golden', goldenCount);
+            updateItemUI();
+
+            isGoldenActive = true;
+            brushBtn.style.backgroundColor = '#f1c40f';
+            brushBtn.innerText = '✨ LƯỢC VÀNG (X2)';
+
+            clearTimeout(goldenTimer);
+            goldenTimer = setTimeout(() => {
+                isGoldenActive = false;
+                brushBtn.style.backgroundColor = 'var(--secondary)';
+                brushBtn.innerText = '🪮 CHẢI LÔNG';
+            }, 5000);
+        }
+
+        function updateItemUI() {
+            document.getElementById('catnipCount').innerText = catnipCount;
+            document.getElementById('goldenCount').innerText = goldenCount;
+            if(hasHat) {
+                document.getElementById('buyHat').innerText = 'Đã sở hữu';
+                document.getElementById('buyHat').disabled = true;
+            }
+        }
+
+        // Thua cuộc
+        function triggerGameOver() {
+            isGameOver = true;
+            clearInterval(gameInterval);
+            let hatText = hasHat ? '🧢 ' : '';
+            catEmoji.innerText = hatText + '🙀';
+            statusText.innerText = 'Mèo nổi giận lôi đình và cào bạn! Thua cuộc!';
+            statusText.className = 'status-text status-danger';
+            
+            brushBtn.style.display = 'none';
+            restartBtn.style.display = 'block';
+
+            // Rung màn hình
+            gameBox.classList.add('shake-effect');
+            setTimeout(() => gameBox.classList.remove('shake-effect'), 400);
+
+            playGrowlSound();
+        }
+
+        function restartGame() {
+            score = 0;
+            suspicion = 0;
+            isGameOver = false;
+            isCatnipActive = false;
+            isGoldenActive = false;
+            scoreDisplay.innerText = score;
+            updateSuspicionBar();
+
+            brushBtn.style.display = 'block';
+            restartBtn.style.display = 'none';
+            brushBtn.style.backgroundColor = 'var(--secondary)';
+            brushBtn.innerText = '🪮 CHẢI LÔNG';
+
+            catState = 'back';
+            let hatText = 
